@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libffi-dev \
     netcat-openbsd \
+    redis-server \
+    mariadb-client \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -52,8 +54,8 @@ RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-gener
 # Exponer el puerto 8000 para acceder a Frappe
 EXPOSE 8000
 
-# Iniciar Frappe Bench después de esperar a MySQL
-CMD /usr/local/bin/wait-for-it.sh mysql 3306 -- sh -c "cd /home/frappe/frappe-bench && \
+# Iniciar Frappe Bench después de esperar a MySQL y Redis
+CMD /usr/local/bin/wait-for-it.sh mysql 3306 -- /usr/local/bin/wait-for-it.sh redis 6379 -- sh -c "cd /home/frappe/frappe-bench && \
     bench new-site ${SITE_NAME} --mariadb-root-password ${MYSQL_ROOT_PASSWORD} --admin-password ${ADMIN_PASSWORD} --db-host ${DB_HOST} && \
     bench --site ${SITE_NAME} install-app erpnext && \
     bench start"

@@ -9,6 +9,13 @@ services:
       MYSQL_PASSWORD: frappe
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./my.cnf:/etc/mysql/my.cnf
+    networks:
+      - frappe_network
+
+  redis:
+    image: redis:latest
+    container_name: redis
     networks:
       - frappe_network
 
@@ -20,6 +27,8 @@ services:
     environment:
       DB_HOST: mysql
       DB_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       MYSQL_ROOT_PASSWORD: root
       MYSQL_USER: frappe
       MYSQL_PASSWORD: frappe
@@ -32,6 +41,7 @@ services:
       - "8000:8000"
     depends_on:
       - mysql
+      - redis
     networks:
       - frappe_network
 
