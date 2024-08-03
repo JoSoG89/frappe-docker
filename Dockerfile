@@ -41,7 +41,7 @@ RUN pip install --user frappe-bench
 # Añadir el binario de pip local al PATH
 ENV PATH="/home/frappe/.local/bin:${PATH}"
 
-# Crear un script de inicialización de MySQL
+# Cambiar al usuario root para iniciar MySQL y configurar la base de datos
 USER root
 RUN echo "[mysqld]\nskip-host-cache\nskip-name-resolve" > /etc/mysql/my.cnf
 COPY init-db.sql /docker-entrypoint-initdb.d/
@@ -59,13 +59,13 @@ RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-gener
 EXPOSE 8000
 
 # Iniciar los servicios necesarios y luego iniciar Frappe
-CMD service mysql start && \
+CMD ["sh", "-c", "service mysql start && \
     sleep 5 && \
-    mysql -u root -proot -e "CREATE DATABASE mysite" && \
-    mysql -u root -proot -e "CREATE USER 'frappe'@'localhost' IDENTIFIED BY 'frappe'" && \
-    mysql -u root -proot -e "GRANT ALL PRIVILEGES ON *.* TO 'frappe'@'localhost'" && \
-    mysql -u root -proot -e "FLUSH PRIVILEGES" && \
+    mysql -u root -proot -e 'CREATE DATABASE mysite' && \
+    mysql -u root -proot -e 'CREATE USER \"frappe\"@\"localhost\" IDENTIFIED BY \"frappe\"' && \
+    mysql -u root -proot -e 'GRANT ALL PRIVILEGES ON *.* TO \"frappe\"@\"localhost\"' && \
+    mysql -u root -proot -e 'FLUSH PRIVILEGES' && \
     cd /home/frappe/frappe-bench && \
     bench new-site mysite.local --mariadb-root-password root --admin-password admin && \
     bench --site mysite.local install-app erpnext && \
-    bench start
+    bench start"]
