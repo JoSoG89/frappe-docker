@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mariadb:latest
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: mysite
+      MYSQL_USER: frappe
+      MYSQL_PASSWORD: frappe
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - frappe_network
+
+  frappe:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: frappe-bench
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: frappe
+      MYSQL_PASSWORD: frappe
+      SITE_NAME: mysite.local
+      ADMIN_PASSWORD: admin
+    volumes:
+      - frappe_sites:/home/frappe/frappe-bench/sites
+      - frappe_logs:/home/frappe/frappe-bench/logs
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    networks:
+      - frappe_network
+
+volumes:
+  mysql_data:
+  frappe_sites:
+  frappe_logs:
+
+networks:
+  frappe_network:

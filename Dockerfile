@@ -8,7 +8,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    mariadb-server \
     sudo \
     cron \
     vim \
@@ -41,23 +40,6 @@ RUN pip install --user frappe-bench
 # Añadir el binario de pip local al PATH
 ENV PATH="/home/frappe/.local/bin:${PATH}"
 
-# Cambiar al usuario root para configurar MySQL
-USER root
-
-# Crear directorios necesarios para MySQL y configurar permisos
-RUN mkdir -p /run/mysqld && \
-    mkdir -p /var/lib/mysql && \
-    chown -R mysql:mysql /run/mysqld && \
-    chown -R mysql:mysql /var/lib/mysql
-
-# Configurar MySQL
-RUN echo "[mysqld]\nskip-host-cache\nskip-name-resolve" > /etc/mysql/my.cnf
-COPY init-db.sql /docker-entrypoint-initdb.d/
-
-# Cambiar al usuario frappe para ejecutar los comandos de bench
-USER frappe
-WORKDIR /home/frappe
-
 # Crear un nuevo sitio de Frappe Bench
 RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-generation && \
     cd frappe-bench && \
@@ -66,14 +48,8 @@ RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-gener
 # Exponer el puerto 8000 para acceder a Frappe
 EXPOSE 8000
 
-# Iniciar los servicios necesarios y luego iniciar Frappe
-CMD ["sh", "-c", "mysqld_safe & \
-    sleep 10 && \
-    mysql -u root -e 'CREATE DATABASE mysite' && \
-    mysql -u root -e 'CREATE USER \"frappe\"@\"localhost\" IDENTIFIED BY \"frappe\"' && \
-    mysql -u root -e 'GRANT ALL PRIVILEGES ON *.* TO \"frappe\"@\"localhost\"' && \
-    mysql -u root -e 'FLUSH PRIVILEGES' && \
-    cd /home/frappe/frappe-bench && \
-    bench new-site mysite.local --mariadb-root-password root --admin-password admin && \
-    bench --site mysite.local install-app erpnext && \
+# Iniciar Frappe Bench
+CMD ["sh", "-c", "cd /home/frappe/frappe-bench && \
+    bench new-site ${SITE_NAME} --mariadb-root-password ${MYSQL_ROOT_PASSWORD} --admin-password ${ADMIN_PASSWORD} && \
+    bench --site ${SITE_NAME} install-app erpnext && \
     bench start"]
