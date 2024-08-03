@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     build-essential \
     libffi-dev \
+    netcat \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -40,6 +41,9 @@ RUN pip install --user frappe-bench
 # Añadir el binario de pip local al PATH
 ENV PATH="/home/frappe/.local/bin:${PATH}"
 
+# Copiar el script de espera
+COPY wait-for-it.sh /usr/local/bin/wait-for-it.sh
+
 # Crear un nuevo sitio de Frappe Bench
 RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-generation && \
     cd frappe-bench && \
@@ -48,8 +52,9 @@ RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-gener
 # Exponer el puerto 8000 para acceder a Frappe
 EXPOSE 8000
 
-# Iniciar Frappe Bench
-CMD ["sh", "-c", "cd /home/frappe/frappe-bench && \
+# Iniciar Frappe Bench después de esperar a MySQL
+CMD ["sh", "-c", "/usr/local/bin/wait-for-it.sh mysql 3306 -- \
+    cd /home/frappe/frappe-bench && \
     bench new-site ${SITE_NAME} --mariadb-root-password ${MYSQL_ROOT_PASSWORD} --admin-password ${ADMIN_PASSWORD} && \
     bench --site ${SITE_NAME} install-app erpnext && \
     bench start"]
