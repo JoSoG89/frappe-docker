@@ -31,7 +31,7 @@ services:
   backend:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: worker
+    command: /home/frappe/frappe-bench/env/bin/python -m frappe.celery_queue worker
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites
     depends_on:
@@ -41,7 +41,7 @@ services:
   schedule:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: schedule
+    command: /home/frappe/frappe-bench/env/bin/python -m frappe.celery_queue schedule
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites
     depends_on:
@@ -51,7 +51,7 @@ services:
   web:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: serve
+    command: /home/frappe/frappe-bench/env/bin/python -m frappe.celery_queue serve
     ports:
       - "80:8000"
     volumes:
