@@ -54,6 +54,6 @@ EXPOSE 8000
 
 # Iniciar Frappe Bench después de esperar a MySQL
 CMD /usr/local/bin/wait-for-it.sh mysql 3306 -- sh -c "cd /home/frappe/frappe-bench && \
-    bench new-site ${SITE_NAME} --mariadb-root-password ${MYSQL_ROOT_PASSWORD} --admin-password ${ADMIN_PASSWORD} && \
+    bench new-site ${SITE_NAME} --mariadb-root-password ${MYSQL_ROOT_PASSWORD} --admin-password ${ADMIN_PASSWORD} --db-host ${DB_HOST} && \
     bench --site ${SITE_NAME} install-app erpnext && \
     bench start"
