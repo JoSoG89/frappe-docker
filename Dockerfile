@@ -55,17 +55,4 @@ RUN bench init frappe-bench --frappe-branch version-14 --skip-redis-config-gener
     cd frappe-bench && \
     bench get-app erpnext --branch version-14
 
-# Exponer el puerto 8000 para acceder a Frappe
-EXPOSE 8000
-
-# Iniciar los servicios necesarios y luego iniciar Frappe
-CMD ["sh", "-c", "service mysql start && \
-    sleep 5 && \
-    mysql -u root -proot -e 'CREATE DATABASE mysite' && \
-    mysql -u root -proot -e 'CREATE USER \"frappe\"@\"localhost\" IDENTIFIED BY \"frappe\"' && \
-    mysql -u root -proot -e 'GRANT ALL PRIVILEGES ON *.* TO \"frappe\"@\"localhost\"' && \
-    mysql -u root -proot -e 'FLUSH PRIVILEGES' && \
-    cd /home/frappe/frappe-bench && \
-    bench new-site mysite.local --mariadb-root-password root --admin-password admin && \
-    bench --site mysite.local install-app erpnext && \
-    bench start"]
+# Exponer el puerto 8000 para acc
