@@ -41,8 +41,16 @@ RUN pip install --user frappe-bench
 # Añadir el binario de pip local al PATH
 ENV PATH="/home/frappe/.local/bin:${PATH}"
 
-# Cambiar al usuario root para iniciar MySQL y configurar la base de datos
+# Cambiar al usuario root para configurar MySQL
 USER root
+
+# Crear directorios necesarios para MySQL y configurar permisos
+RUN mkdir -p /run/mysqld && \
+    mkdir -p /var/lib/mysql && \
+    chown -R mysql:mysql /run/mysqld && \
+    chown -R mysql:mysql /var/lib/mysql
+
+# Configurar MySQL
 RUN echo "[mysqld]\nskip-host-cache\nskip-name-resolve" > /etc/mysql/my.cnf
 COPY init-db.sql /docker-entrypoint-initdb.d/
 
