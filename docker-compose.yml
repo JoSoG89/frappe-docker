@@ -6,7 +6,6 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: 123
     volumes:
-      - ./installation/frappe-mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
       - mariadb-data:/var/lib/mysql
     ports:
       - "3306:3306"
@@ -32,9 +31,7 @@ services:
   backend:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: ["bench", "worker", "--queue", "default"]
-    environment:
-      - WORKER_TYPE=default
+    command: worker
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites
     depends_on:
@@ -44,7 +41,7 @@ services:
   schedule:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: ["bench", "schedule"]
+    command: schedule
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites
     depends_on:
@@ -54,13 +51,11 @@ services:
   web:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: ["bench", "serve", "--port", "80"]
-    environment:
-      - FRAPPE_PY=gunicorn
+    command: serve
+    ports:
+      - "80:8000"
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites
-    ports:
-      - "80:80"
     depends_on:
       - backend
       - redis-cache
@@ -69,13 +64,13 @@ services:
   socketio:
     image: frappe/frappe-socketio:v14
     restart: always
-    volumes:
-      - sites-vol:/home/frappe/frappe-bench/sites
     depends_on:
       - web
       - redis-socketio
     ports:
       - "9000:9000"
+    volumes:
+      - sites-vol:/home/frappe/frappe-bench/sites
 
 volumes:
   mariadb-data:
