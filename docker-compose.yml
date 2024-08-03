@@ -30,7 +30,7 @@ services:
   backend:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: worker
+    command: ["bench", "worker", "--queue", "default"]
     environment:
       - WORKER_TYPE=default
     volumes:
@@ -42,7 +42,7 @@ services:
   schedule:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: schedule
+    command: ["bench", "schedule"]
     volumes:
       - sites-vol:/home/frappe/frappe-bench/sites
     depends_on:
@@ -52,7 +52,7 @@ services:
   web:
     image: frappe/erpnext-worker:v14
     restart: always
-    command: web
+    command: ["bench", "serve", "--port", "80"]
     environment:
       - FRAPPE_PY=gunicorn
     volumes:
