@@ -15,20 +15,14 @@ services:
   redis-cache:
     image: redis:alpine
     restart: always
-    ports:
-      - "6379:6379"
 
   redis-queue:
     image: redis:alpine
     restart: always
-    ports:
-      - "6379:6379"
 
   redis-socketio:
     image: redis:alpine
     restart: always
-    ports:
-      - "6379:6379"
 
   web:
     image: frappe/erpnext:v14
